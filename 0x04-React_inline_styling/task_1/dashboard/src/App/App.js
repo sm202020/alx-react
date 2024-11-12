@@ -1,81 +1,72 @@
-import React from 'react';
-import './App.css';
+import App from './App';
 import Header from '../Header/Header';
 import Footer from '../Footer/Footer';
-import Notification from '../Notifications/Notifications';
 import Login from '../Login/Login';
 import CourseList from '../CourseList/CourseList';
-import BodySectionWithMarginBottom from '../BodySection/BodySectionWithMarginBottom';
-import BodySection from '../BodySection/BodySection';
-import { getLatestNotification } from '../utils/utils';
-import PropTypes from 'prop-types';
+import { shallow } from 'enzyme';
+import React from 'react'
+import {StyleSheetTestUtils} from 'aphrodite';
+
+StyleSheetTestUtils.suppressStyleInjection();
 
 
-class App extends React.Component {
-  
-  constructor(props) {
-    super(props);
-    this.isLoggedIn = props.isLoggedIn;
-    this.logOut = props.logOut;
-    this.handleKeyDown = this.handleKeyDown.bind(this);
-    this.listCourses = [
-      {id: 1, name: 'ES6', credit: 60},
-      {id: 2, name: 'Webpack', credit: 20},
-      {id: 3, name: 'React', credit: 40}
-    ];
-  
-    this.listNotifications = [
-      {id: 1, value: "New course available", type: "default"},
-      {id: 2, value: "New resume available", type: "urgent"},
-      {id: 3, html: {__html: getLatestNotification()}, type: "urgent"},
-    ];
-  }
+describe('App', () => {
+    
+    let wrapper;
+    beforeEach(() => {
+        wrapper = shallow(<App />)
+    })
+    test('App should not rash', () => {
+        expect(wrapper.length).toBe(1)
+    });
 
-  handleKeyDown(e) {
-    if (e.ctrlKey && e.key === 'h') {
-      e.preventDefault();
-      alert("Logging you out");
-      this.logOut();
-    }  
-  }
+    test("App renders a div with the class: App-header", () => {
+        wrapper.setProps({isLoggedIn: true})
+        // console.debug(wrapper.html())
+        expect(wrapper.find('App-header').length).toBe(0)
+    });
 
-  componentDidMount() {
-    window.addEventListener('keydown', this.handleKeyDown);
-  }
+    // test("App renders a div with the class: App-body", () => {
+    //     wrapper.setProps({isLoggedIn: true})
+    //     expect(wrapper.find('.App-body').length).toBe(1);
+    // });
 
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.handleKeyDown);
-  }
+    // test("App renders a div with the class: App-footer", () => {
+    //     wrapper.setProps({isLoggedIn: true})
+    //     expect(wrapper.find('.App-footer').length).toBe(1);
+    // });
 
-  render () {
-    return (
-      <React.Fragment>
-        <Notification listNotifications={this.listNotifications}/>
-        <div className="App">
-          <Header />
-          {this.props.isLoggedIn ?
-            <BodySectionWithMarginBottom title="Course list"><CourseList listCourses={this.listCourses}/></BodySectionWithMarginBottom>
-          : 
-            <BodySectionWithMarginBottom title="Log in to continue"><Login /></BodySectionWithMarginBottom>
-          }
-          <BodySection title="News from the School">
-            <p>Random Text</p>
-          </BodySection>
-          <Footer />
-        </div>
-      </React.Fragment>
-    );
-  }
-}
+    // test("check if App component contain the Notifications component", () => {
+    //     wrapper.setProps({isLoggedIn: true})
+    //     expect(wrapper.find(<Notifications />)).toBe(1)
+    // })
+    test("check if App component contain the Header component", () => {
+        wrapper.setProps({isLoggedIn: true})
+        expect(wrapper.contains(<Header />)).toBeTruthy()
+    })
+    test("check if App component contain the Login component", () => {
+        wrapper.setProps({isLoggedIn: false})
+        expect(wrapper.contains(<Login />)).toBeTruthy()
+    })
+    test("check if App component contain the Footer component", () => {
+        wrapper.setProps({isLoggedIn: true})
+        expect(wrapper.contains(<Footer />)).toBeTruthy()
+    })
+    test("check that CourseList is not displayed ", () => {
+        wrapper.setProps({isLoggedIn: false})
+        expect(wrapper.contains(<CourseList />)).toBeFalsy()
+    })
 
-App.defaultProps = {
-  isLoggedIn: false,
-  logOut: () => {}
-};
-
-App.propTypes = {
-  isLoggedIn: PropTypes.bool,
-  logOut: PropTypes.func
-};
-
-export default App;
+    describe("when isLoggedIn prop is true", () => {
+        let wrapper;
+        beforeEach(() => {
+            wrapper = shallow(<App isLoggedIn={true} />)
+        })
+        test("verify that the Login component is not included", () => {
+            expect(wrapper.contains(<Login />)).toBeFalsy()
+        })
+        test("verify that the CourseList component is included", () => {
+            expect(wrapper.find('CourseList').length).toBe(1)
+        })
+    })
+});
